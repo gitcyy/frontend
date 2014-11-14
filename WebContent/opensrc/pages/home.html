@@ -1,0 +1,19 @@
+<meta charset="UTF-8">
+<div class="jumbotron text-center">
+	<h1>Home Page</h1>
+
+	<p>{{ message }}</p>
+	
+	<table align="center">
+		<tr>
+			<th>姓名</th>
+			<th>国籍</th>
+			<th>是否UK</th>
+		</tr>
+		<tr ng-repeat="x in names | orderBy:'Country' " ng-class="$index % 2 == 0 ? 'even' : 'odd';">
+		    <td>{{ x.Name }}</td>
+		    <td>{{ x.Country }}</td>
+		    <td>{{ x.Country | checkMark }}</td>
+	  	</tr>
+	</table>
+</div>
