@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="css/jquery-jvectormap-2.0.0.css">
+<script src="js/raphael.js"></script>
+<script src="js/fraphael.js"></script>
+<script src="js/jquery-1.8.2.js"></script>
+<script src="js/jquery-jvectormap-2.0.0.min.js"></script>
+<script src="js/jquery-jvectormap-world-mill-en.js"></script>
+</head>
+<body style="margin:0;overflow:hidden;">
+	<div id="map1" style="z-index:1;"/>
+</body>
+</html>
+<script type="text/javascript">
+	$(function(){
+		var width = $(window).width();
+		var height = $(window).height();
+		$('#map1').width(width);
+		$('#map1').height(height);
+
+		var mapobj = $('#map1').vectorMap({
+			map: 'world_mill_en',
+			backgroundColor:'#333',
+			zoomOnScroll:false,
+			regionStyle: {
+				initial: {
+					fill: '#333',
+					"fill-opacity": 1,
+					stroke: '#bbb',
+					"stroke-width": 0.1,
+					"stroke-opacity": 1
+				}
+			}
+		});
+		$('.jvectormap-zoomin').hide();
+		$('.jvectormap-zoomout').hide();
+		
+		var paper = Raphael(0, 0, width, height);
+
+		var rect = paper.rect(20, 20, 20, 20).attr({fill: '#F00',stroke: "#ccc"});
+		var anim = Raphael.animation({transform: "r360"}, 2500).repeat(Infinity);
+		rect.animate(anim);
+
+		var map = $("#map1").vectorMap('get', 'mapObject');
+		var resPos = map.latLngToPoint(52.50, 13.39);
+		var circle = paper.circle(resPos.x, resPos.y, 5);
+		circle.attr({fill: "r#FE7727:50-#F57124:100", stroke: "#fff", "stroke-width": 2})
+		var txt = paper.text(resPos.x+20, resPos.y, '\u67cf\u6797');	
+		txt.attr("fill", 'lightblue');
+
+		var resPos2 = map.latLngToPoint(-33.55, 151.17);
+		var circle2 = paper.circle(resPos2.x, resPos2.y, 0);
+		circle2.attr({fill: "r#FE7727:50-#F57124:100", stroke: "#fff", "stroke-width": 2})
+		var txt = paper.text(resPos2.x+20, resPos2.y, '\u6089\u5c3c');	
+		txt.attr("fill", 'lightblue');
+
+		var resPos3 = map.latLngToPoint(39.92, 116.41);
+		var circle3 = paper.circle(resPos3.x, resPos3.y, 5);
+		circle3.attr({fill: "r#FE7727:50-#F57124:100", stroke: "#fff", "stroke-width": 2})
+		var txt = paper.text(resPos3.x+20, resPos3.y, '\u5317\u4eac');	
+		txt.attr("fill", 'lightblue');
+
+		var anim = Raphael.animation({r: 20, "opacity": 0}, 1500).repeat(Infinity);
+		circle2.animate(anim);
+
+		paper.customAttributes.progress = function (v) {
+			if(this.g != null){
+				var gg = this.g;
+				setTimeout(function(){
+					gg.remove();
+				},200);
+			} 
+			this.g = this.glow({color: this.attr('stroke'), "opacity":0.1});
+			var path = this.data("mypath");
+			if (!path) {
+				return {
+					cx: fx, cy: fy
+				};
+			}    
+			var len = path.getTotalLength();
+			var point = path.getPointAtLength(v * len);
+			return {
+				cx: point.x, cy: point.y
+			};
+		};
+
+		var flight = function(fx, fy, tx, ty, color) {
+			var seed = 30;//Math.sin(Math.random()*100)*50;
+			console.log(fx + ":" + seed);
+			//var line = paper.path(["M", fx, fy, "L", tx, ty]).attr('stroke',color).attr("opacity", 0);
+			var line = paper.path("M" + fx + " " + fy + " L" + (fx-seed) + " " + fy + " L" + tx + " " + ty).attr('stroke',color).attr("opacity", 0);
+			line.blur();
+			/*var lg = line.glow({color: line.attr('stroke'), width:3});
+			if(lg != null){
+				setTimeout(function(){
+					lg.remove();
+				},1000);
+			} */
+			var circle = paper.circle(fx, fy, 3);
+			circle.attr("fill", "#fff");
+			circle.attr("stroke", color);
+			circle.data("mypath", line);
+			circle.attr("progress", 0);
+			circle.animate({progress: 1}, 5000, "<", function(){this.g.remove();this.remove();line.remove();});
+		};
+
+		flight(resPos2.x, resPos2.y, resPos.x, resPos.y, "#F00");
+		setInterval(function(){
+			flight(resPos2.x, resPos2.y, resPos.x, resPos.y, "#F00");
+		}, 3000);
+
+		flight(resPos2.x, resPos2.y, resPos3.x, resPos3.y, "lightblue");
+		setInterval(function(){
+			flight(resPos2.x, resPos2.y, resPos3.x, resPos3.y, "lightblue");
+		}, 3000);
+	});
+</script>
