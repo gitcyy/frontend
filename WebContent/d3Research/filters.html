@@ -32,36 +32,61 @@ h1, h2, h3 {
 <body>
 	<svg xmlns='http://www.w3.org/2000/svg'
 		xmlns:xlink='http://www.w3.org/1999/xlink' height=300 width=450>
-	    <defs>
+	    <!-- <defs>
 	        <filter id="filter-blur" x="0" y="0">
 	            <feGaussianBlur in="SourceGraphic" stdDeviation="1" />
 	        </filter>
-	    </defs>
+	    </defs> -->
 	</svg>
 
 	<script>
 		var data = [ 4, 8, 40, 15, 16, 23, 42, 18 ];
 
-		var x = d3.scale.linear().domain([ 0, d3.max(data) ]).range([ 0, 420 ]);
+		var x = d3.scale.linear().domain([ 0, d3.max(data) ]).range([ 0, 30 ]);
 		
 		var color = d3.scale.category20();
+		
+		var gradient = d3.select('svg').selectAll("linearGradient").data(data).enter()
+		    .append("linearGradient")
+		    .attr("y1", "1")
+		    .attr("y2", "0")
+		    .attr("x1", "0")
+		    .attr("x2", "0")
+		    .attr("gradientUnits", "objectBoundingBox")
+		    .attr('id', function(d,i){return "gradient-"+i})
+		    gradient.append("stop")
+		        .attr("offset", "0")
+		        .attr("stop-opacity", "1")
+		    .attr("stop-color", function(d){return "hsl(" + Math.random() * 360 + ", 100%, 50%)";})
+		    gradient.append("stop")
+		        .attr("offset", 1)
+		        .attr("stop-opacity", "1")
+		         .attr("stop-color", function(d){return "hsl(" + Math.random() * 360 + ", 100%, 50%)";})
+		    gradient.append("stop")
+		        .attr("offset",  1)
+		        .attr("stop-opacity", "0")
+		        .attr("stop-color", "#fa0");
 
-		d3.select('svg').style('background-color', '#000').selectAll('rect').data(data).enter().append('rect')
+		d3.select('svg').style({'background-color':'#eee'}).selectAll('circle').data(data).enter().append('circle')
 				.attr({
-					filter : 'url(#filter-blur)',
-					height : 20,
-					width : function(d) {
+					//filter : 'url(#filter-blur)',
+					//height : 20,
+					//width : function(d) {
+					//	return x(d) + 'px';
+					//},
+					r :  function(d) {
 						return x(d) + 'px';
 					},
-					x : 0,
-					y : function(d, i) {
-						return i * 30;
+					cx : 50,
+					cy : function(d, i) {
+						return i*10 + 10;
 					},
 					fill : function(d, i) {
-						return color(i);
+						return "url(#gradient-"+i+")"; //"hsl(" + Math.random() * 360 + ", 100%, 50%)";
 					},
+					opacity : 0.7,
 					stroke : '#fff',
-					'stroke-width' : 3
+					//'stroke-width' : 1
 				}).text(function(d) {
 					return d;
 				});

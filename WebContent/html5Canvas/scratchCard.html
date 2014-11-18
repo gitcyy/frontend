@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>scratchCard</title>
+<style type="text/css">
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+
+#bd {
+	position: relative;
+	top: 0;
+	left: 0;
+	margin: 0 auto;
+	width: 1024px;
+	max-width: 100%;
+	height: 100%;
+}
+
+#bd .pic {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	background: url(porsche.jpg) no-repeat center;
+	background-size: cover;
+}
+
+#bd canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 9;
+	cursor: pointer;
+}
+</style>
+</head>
+<body>
+	<div id="bd">
+		<div class="pic"></div>
+	</div>
+</body>
+<script type="text/javascript">
+	(function() {
+		var bd = document.getElementById('bd'), cvs = null, ctx = null, preX = null, preY = null, isMobile = (function() {
+			var ua = navigator.userAgent;
+			var reg = /iPod|iPad|iPhone|Android|Windows Phone|Symbian/i;
+			return reg.test(ua);
+		})();
+
+		try {
+			document.createElement('canvas').getContext('2d');
+		} catch (e) {
+			alert('您的设备不支持刮刮卡效果哦~!');
+			return; // 设备不支持，停止运行
+		}
+		
+		var wi = bd.clientWidth, hi = bd.clientHeight;
+		
+		init(); // 执行初始化操作
+		
+		function init() {
+			wi = bd.clientWidth;
+			hi = bd.clientHeight;
+
+			if (!cvs) {
+				cvs = document.createElement('canvas');
+				bd.appendChild(cvs);
+				ctx = cvs.getContext('2d');
+			}
+			cvs.width = wi;
+			cvs.height = hi;
+
+			ctx.globalCompositeOperation = 'source-over'; // 默认值
+			ctx.fillStyle = "rgba(0,0,0,.8)";
+			ctx.fillRect(0, 0, wi, hi);
+			ctx.globalCompositeOperation = 'destination-out'; //
+		}
+
+		ctx.fillCircle = function(x, y, radius, fillColor) {
+			this.fillStyle = fillColor;
+			this.beginPath();
+			this.arc(x, y, radius, 0, Math.PI * 2);
+			this.closePath();
+			this.fill();
+		};
+		ctx.fillArea = function(preX, preY, nextX, nextY, radius, fillColor) {
+			var b3, deltaX, deltaY;
+
+			b3 = Math.sqrt((nextX - preX) * (nextX - preX) + (nextY - preY)
+					* (nextY - preY));
+			deltaX = Math.ceil((radius * (nextY - preY)) / b3);
+			deltaY = Math.ceil((radius * (preX - nextX)) / b3);
+
+			this.fillStyle = fillColor;
+			this.beginPath();
+			this.moveTo(preX + deltaX, preY + deltaY);
+			this.lineTo(nextX + deltaX, nextY + deltaY);
+			this.lineTo(nextX - deltaX, nextY - deltaY);
+			this.lineTo(preX - deltaX, preY - deltaY);
+			this.lineTo(preX + deltaX, preY + deltaY);
+			this.closePath();
+			this.fill();
+		};
+		// 绑定事件，由于canvas需要IE9+的现代浏览器，所以绑定事件没有必要兼容IE的attachEvent方法
+		cvs.addEventListener(isMobile ? 'touchstart' : 'mousedown',
+				function(e) {
+					preX = isMobile ? e.changedTouches[0].pageX : e.pageX;
+					preY = isMobile ? e.changedTouches[0].pageY : e.pageY;
+					preX -= bd.offsetLeft;
+					preY -= bd.offsetTop;
+					ctx.fillCircle(preX, preY, 20, '#000');
+				}, false);
+		
+		cvs.addEventListener(isMobile ? 'touchend' : 'mouseup', function(e) {
+			var pixels = 0;
+			var w = cvs.width;
+			var h = cvs.height;
+			preX = null;
+			preY = null;
+			var imageData = ctx.getImageData(0, 0, w, h).data;
+			for (var i = 0; i < imageData.length; i += 4) {
+				if (imageData[i] === 0 && imageData[i + 1] === 0 && imageData[i + 2] === 0 && imageData[i + 3] === 0) {
+					pixels++;
+				}
+			}
+			var percent = (pixels/(wi * hi)) * 100;
+			if (percent > 60) {
+				alert('ok');
+			}
+		}, false);
+
+		cvs.addEventListener(isMobile ? 'touchmove' : 'mousemove', function(e) {
+			e.preventDefault(); // 去除移动端触摸时的默认行为，禁止了页面的滚动
+			if (preX === null || preY === null) {
+				return;
+			}
+
+			var x = isMobile ? e.changedTouches[0].pageX : e.pageX, // IE8及以下不支持pageX，不过在这也不需要兼容
+			y = isMobile ? e.changedTouches[0].pageY : e.pageY, r = 20;
+			x -= bd.offsetLeft;
+			y -= bd.offsetTop;
+
+			ctx.fillCircle(preX, preY, 20, '#000');
+			ctx.fillCircle(x, y, 20, '#000');
+			ctx.fillArea(preX, preY, x, y, r, '#000');
+
+			preX = x;
+			preY = y;
+		}, false);
+
+		window.addEventListener('resize', function() {
+			init();
+		}, false);
+
+	})();
+</script>
+</html>

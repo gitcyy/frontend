@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>movingLight</title>
+<style>
+* {
+	padding: 0;
+	margin: 0;
+}
+/* set the background to black */
+body {
+	background: black;
+}
+</style>
+</head>
+<body>
+	<canvas id="background"></canvas>
+</body>
+<script type="text/javascript">
+	window.requestAnimFrame = (function() {
+		return window.requestAnimationFrame
+				|| window.webkitRequestAnimationFrame
+				|| window.mozRequestAnimationFrame
+				|| window.oRequestAnimationFrame
+				|| window.msRequestAnimationFrame || function(callback) {
+					window.setTimeout(callback, 1000 / 60);
+				};
+	})();
+
+	window.onload = function() {
+		//the canvas element
+		var canvas = document.getElementById('background');
+		var ctx = canvas.getContext('2d'); //the canvas 2d context
+
+		//canvas sizing
+		var w = window.innerWidth;//the width of the viewport
+		var h = window.innerHeight;//the height of the viewport
+		canvas.width = w;
+		canvas.height = h;
+
+		//the start time
+		var time = Date.now();
+
+		//the main render function 一个GLSL着色方法
+		function render(time, fragcoord) {
+			var light_pos = [ w / 2 + w * Math.sin(time) * 0.3,
+					h / 2 + h * Math.cos(time) * 0.5 ];
+			var intensity = 100 * Math.abs(Math.tan((time + 2) / 10));
+			var dist = Math.sqrt(Math.pow(fragcoord[0] - light_pos[0], 2)
+					+ Math.pow(fragcoord[1] - light_pos[1], 2));
+			var light_color = [ 0.1, 0.8, 0.5 ];
+			var alpha = 0.5 / (dist / intensity);
+			return [ light_color[0] * alpha, light_color[1] * alpha,
+					light_color[2] * alpha, alpha * alpha ];
+		}
+		
+		//the function to draw the result on screen
+		function animate() {
+			var delta = (Date.now() - time) / 1000;
+			var buffer = ctx.createImageData(w, h);
+			for (var x = 0; x < w; x++) {
+				for (var y = 0; y < h; y++) {
+					var ret = render(delta, [ x, y ]);//the render result
+					var i = (y * w + x) * 4;//the current position of the pixel
+					//the data returned from the
+					//render function is in floating point number range from 0 to 1
+					buffer.data[i] = ret[0] * 255;
+					buffer.data[i + 1] = ret[1] * 255;
+					buffer.data[i + 2] = ret[2] * 255;
+					buffer.data[i + 3] = ret[3] * 255;
+				}
+			}
+			ctx.putImageData(buffer, 0, 0);
+			requestAnimFrame(animate);
+		}
+		animate();
+	}
+</script>
+</html>
