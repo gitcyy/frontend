@@ -130,8 +130,9 @@ html, body {
 				}
 			}
 			var percent = (pixels/(wi * hi)) * 100;
-			if (percent > 60) {
-				alert('ok');
+			if (percent > 10) {
+				//alert('ok');
+				ctx.clearRect(0, 0, wi, hi);
 			}
 		}, false);
 

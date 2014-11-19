@@ -1,0 +1,29 @@
+<!doctype HTML>
+<html>
+<head>
+<title>Canvassing</title>
+<style>
+body {
+	font-family: "helvetica neue", arial, sans-serif;
+	margin: 0;
+	padding: 0;
+}
+
+#whisky {
+	padding: 0;
+	width: 500px;
+	height: 500px;
+}
+</style>
+</head>
+<body>
+	<canvas id="whisky" width="500" height="500">
+			
+			</canvas>
+	<script src="connected.particles.js"></script>
+	<script>
+		var connecty = connected('whisky');
+		connecty.start();
+	</script>
+</body>
+</html>
